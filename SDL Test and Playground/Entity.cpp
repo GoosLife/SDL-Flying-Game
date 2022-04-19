@@ -2,14 +2,30 @@
 #include <iostream> // DEBUG
 
 Entity::Entity(int type) {
-	mType = type;
-	mVelocity = -5;
+	Type = type;
+	mVelocity = GetVelocity(Type);
 	EntityModel.h = 32;
 	EntityModel.w = 32;
 
-	EntityCollider = Collider(&EntityModel);
+	EntityCollider = Collider(EntityModel);
 }
 Entity::~Entity() {}
+
+int Entity::GetVelocity(int type)
+{
+	switch (type) {
+		// Clock & score object
+	case 0:
+	case 3:
+		return -5;
+		// Slow enemy
+	case 1:
+		return -2;
+		// Fast enemy
+	case 2:
+		return -7;
+	}
+}
 
 void Entity::Init(int spawnY, SDL_Window* window) {
 	// Get renderer
@@ -21,13 +37,26 @@ void Entity::Init(int spawnY, SDL_Window* window) {
 	EntityModel.x = spawnX;
 	EntityModel.y = spawnY;
 
-	SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+	switch (Type) {
+	case 0:
+		SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+		break;
+	case 1:
+		SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
+		break;
+	case 2:
+		SDL_SetRenderDrawColor(ren, 0, 255, 0, 255);
+		break;
+	case 3:
+		SDL_SetRenderDrawColor(ren, 0, 0, 255, 255);
+		break;
+	}
 
 	SDL_RenderDrawRect(ren, &EntityModel);
 	SDL_RenderFillRect(ren, &EntityModel);
 }
 
-void Entity::Update(float deltaTime, Player player) {
+void Entity::Update(float deltaTime, Collider playerCollider) {
 
 	// Move entity across screen
 	EntityModel.x += mVelocity;
@@ -36,13 +65,31 @@ void Entity::Update(float deltaTime, Player player) {
 		this->~Entity();
 	}
 
-	if (EntityCollider.HasCollided(&player.PlayerCollider) == true) {
-		std::cout << "I detected it from the update function." << std::endl;
-	}
+	EntityCollider.Update(EntityModel);
 }
 
 void Entity::Draw(SDL_Renderer* ren) {
-	SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+
+	switch (Type) {
+	case 0:
+		SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+		break;
+	case 1:
+		SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
+		break;
+	case 2:
+		SDL_SetRenderDrawColor(ren, 0, 255, 0, 255);
+		break;
+	case 3:
+		SDL_SetRenderDrawColor(ren, 0, 0, 255, 255);
+		break;
+	}
+	
 	SDL_RenderDrawRect(ren, &EntityModel);
 	SDL_RenderFillRect(ren, &EntityModel);
+}
+
+bool Entity::IsOffScreen(const Entity& e)
+{
+	return e.EntityModel.x < -32;
 }

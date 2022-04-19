@@ -24,15 +24,15 @@ void SpawnManager::SpawnEntity(SDL_Window* window, std::list<Entity>* entities) 
 			break;
 		case 2:
 			std::cout << "Score object spawned" << std::endl;
-			// spawn score object
+			SpawnScoreObject(spawnY, window, entities);
 			break;
 		case 3:
 			std::cout << "Slow enemy spawned" << std::endl;
-			// spawn slow enemy
+			SpawnSlowEnemy(spawnY, window, entities);
 			break;
 		case 4:
 			std::cout << "Fast enemy spawned" << std::endl;
-			// spawn fast enemy
+			SpawnFastEnemy(spawnY, window, entities);
 			break;
 		case 5:
 		case 6:
@@ -55,8 +55,22 @@ void SpawnManager::SpawnClock(int spawnY, SDL_Window* window, std::list<Entity>*
 	entities->push_back(c);
 }
 
-bool SpawnManager::IsOffScreen(const Entity& e)
-{
-	return e.EntityModel.x < -32;
+void SpawnManager::SpawnSlowEnemy(int spawnY, SDL_Window* window, std::list<Entity>* entities) {
+	Entity c(1);
+	c.Init(spawnY, window);
+	entities->push_back(c);
 }
+
+void SpawnManager::SpawnFastEnemy(int spawnY, SDL_Window* window, std::list<Entity>* entities) {
+	Entity c(2);
+	c.Init(spawnY, window);
+	entities->push_back(c);
+}
+
+void SpawnManager::SpawnScoreObject(int spawnY, SDL_Window* window, std::list<Entity>* entities) {
+	Entity c(3);
+	c.Init(spawnY, window);
+	entities->push_back(c);
+}
+
 

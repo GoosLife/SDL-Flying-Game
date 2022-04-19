@@ -1,47 +1,14 @@
 #define SDL_MAIN_HANDLED
+#include <algorithm>
 #include <iostream>
 #include <list>
-#include <algorithm>
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "DeltaTime.h"
 #include "FlyingGame.h"
 
-// I was just testing drawing to the screen in SDL :)
-///// <summary> 
-///// Draws a chessboard
-///// </summary>
-///// <param name="ren"></param>
-//void DrawBoard(SDL_Renderer* renderer) {
-//	for (int i = 0; i < 8; i++) {
-//		for (int j = 0; j < 8; j++) {
-//
-//			if ((j % 2 == 0 && i % 2 != 0) || (j % 2 != 0 && i % 2 == 0)) {
-//				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-//			}
-//			else {
-//				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-//			}
-//
-//			// Set up rectangle
-//			SDL_Rect rect;
-//
-//			rect.x = j * 32;
-//			rect.y = i * 32;
-//			rect.w = 32;
-//			rect.h = 32;
-//
-//			// Draw rectangle
-//			SDL_RenderDrawRect(renderer, &rect);
-//			SDL_RenderFillRect(renderer, &rect);
-//		}
-//	}
-//
-//	SDL_RenderPresent(renderer);
-//}
-
 void DrawBackground(SDL_Renderer* ren) {
-	SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
+	SDL_SetRenderDrawColor(ren, 135, 206, 235, 255);
 	SDL_RenderClear(ren);
 }
 
@@ -54,12 +21,15 @@ int main() {
 	SDL_Renderer* ren; // Create renderer
 	SDL_Event event{};	// Get SDL events 
 
+	Player testPlayer;
+	std::list<Entity> entities;
+
 	DeltaTime deltaTime;
 	GameManager gameManager;
 	SpawnManager spawnManager;
 
-	Player testPlayer;
-	std::list<Entity> entities;
+	gameManager.Player = &testPlayer;
+	gameManager.Entities = &entities;
 
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) { // If SDL couldn't be initialized
@@ -73,8 +43,13 @@ int main() {
 
 	// Create window
 	SDL_CreateWindowAndRenderer(640, 480, NULL, &window, &ren);
+
+	// Add window and renderer to game manager
+	gameManager.Window = window;
+	gameManager.Renderer = ren;
+
 	// Create font to write text on screen
-	TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 25);
+	gameManager.GameFont = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 25);
 
 
 	// Initialize objects
@@ -94,35 +69,22 @@ int main() {
 				testPlayer.Fly(deltaTime.Time);
 			}
 
-			// Spawn new objects
-			if (entities.size() < 1) {
-				spawnManager.SpawnEntity(window, &entities);
-			}
-
 			// Do physics
 			deltaTime.UpdateDeltaTime();
 			
-			testPlayer.Update(deltaTime.Time);
-
-			std::for_each(entities.begin(), entities.end(), [deltaTime, testPlayer](Entity& e) { e.Update(deltaTime.Time, testPlayer); });
-
+			// Update game objects
+			gameManager.Update(deltaTime.Time);
 
 			// Draw
 
 			DrawBackground(ren);
-			testPlayer.Draw(ren);
+			gameManager.Draw();
 
-			std::for_each(entities.begin(), entities.end(), [ren](Entity& e) { e.Draw(ren); });
-
-			gameManager.DrawGame(ren, font, window);
-
-			// Remove entities off-screen
-			entities.remove_if(SpawnManager::IsOffScreen);
-
-			SDL_RenderPresent(ren); // Update screen
+			// Update screen
+			SDL_RenderPresent(ren);
 		}
 		else if (gameManager.GameOver) {
-			gameManager.DrawGameOver(ren, font, window); // Make sure game over screen gets drawn
+			gameManager.DrawGameOver(); // Make sure game over screen gets drawn
 			SDL_RenderPresent(ren); // Update screen
 			SDL_PollEvent(&event); // Get events
 		}

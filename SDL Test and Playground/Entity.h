@@ -7,18 +7,23 @@ class Entity
 {
 private:
 
-	int mType;
 	float mVelocity;
 
 public:
+	int Type;
+
 	SDL_Rect EntityModel;
 
-	Collider EntityCollider = Collider(&EntityModel);
+	Collider EntityCollider = Collider(EntityModel);
 
 	Entity(int type);
 	~Entity();
 
+	int GetVelocity(int type);
+
 	void Init(int spawnY, SDL_Window* window);
-	void Update(float deltaTime, Player player);
+	void Update(float deltaTime, Collider playerCollider);
 	void Draw(SDL_Renderer* ren);
+
+	static bool IsOffScreen(const Entity& e);
 };

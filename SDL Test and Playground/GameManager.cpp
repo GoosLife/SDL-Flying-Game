@@ -1,5 +1,7 @@
 #include "GameManager.h"
 GameManager::GameManager() {
+	spawnManager = SpawnManager();
+
 	Score = 0;
 	Time = 30;
 }
@@ -10,16 +12,74 @@ void GameManager::AddScore(int scoreToAdd) {
 	Score += scoreToAdd;
 }
 
+void GameManager::Update(float time)
+{
+	// Game is over if player touches the top or bottom of the screen
+	if (Player->PlayerModel.y <= 0 || Player->PlayerModel.y >= 480 - 32) {
+		GameOver = true;
+	}
+
+	// Spawn new objects
+	spawnManager.SpawnEntity(Window, Entities);
+
+	// Update player
+	Player->Update(time);
+	
+	// Update entities
+	std::list<Entity>::iterator e;
+	for (e = Entities->begin(); e != Entities->end(); ++e) {
+		e->Update(time, Player->PlayerCollider);
+
+		if (e->EntityCollider.HasCollided(&Player->PlayerCollider) == true) {
+			e->EntityModel.h = 0;
+			e->EntityModel.w = 0;
+
+			switch (e->Type) {
+				// Clock
+			case 0:
+				AddTime(10);
+				break;
+				// Enemies
+			case 1:
+			case 2:
+				GameOver = true;
+				break;
+				// Score object
+			case 3:
+				AddScore(100);
+			}
+		}
+	}
+
+	// Remove entities off-screen
+	Entities->remove_if(Entity::IsOffScreen);
+}
+
+void GameManager::Draw()
+{
+	// Draw player
+	Player->Draw(Renderer);
+
+	// Draw entities
+	std::list<Entity>::iterator e;
+	for (e = Entities->begin(); e != Entities->end(); ++e) {
+		e->Draw(Renderer);
+	}
+
+	// Draw game info etc.
+	DrawGame();
+}
+
 void GameManager::AddTime(int timeToAdd) {
 	Time += timeToAdd;
 }
 
-void GameManager::DrawGame(SDL_Renderer* ren, TTF_Font* font, SDL_Window* window) {
+void GameManager::DrawGame() {
 
 	SDL_Color white = { 255,255,255 }; // Set font color
 
 	int windowWidth;
-	SDL_GetWindowSize(window, &windowWidth, NULL);
+	SDL_GetWindowSize(Window, &windowWidth, NULL);
 
 	// DRAW TIMER ON SCREEN
 	std::string timerText = "Time: ";
@@ -28,9 +88,9 @@ void GameManager::DrawGame(SDL_Renderer* ren, TTF_Font* font, SDL_Window* window
 
 	SDL_Surface* gameInfoSurface;
 
-	gameInfoSurface = TTF_RenderText_Solid(font, pTimeChar, white); // Create surface
+	gameInfoSurface = TTF_RenderText_Solid(GameFont, pTimeChar, white); // Create surface
 
-	SDL_Texture* gameInfoTexture = SDL_CreateTextureFromSurface(ren, gameInfoSurface);
+	SDL_Texture* gameInfoTexture = SDL_CreateTextureFromSurface(Renderer, gameInfoSurface);
 
 	int timerW = 0;
 	int timerH = 0;
@@ -42,15 +102,15 @@ void GameManager::DrawGame(SDL_Renderer* ren, TTF_Font* font, SDL_Window* window
 
 	SDL_Rect dstRectTimer = { timerX,timerY,timerW,timerH };
 
-	SDL_RenderCopy(ren, gameInfoTexture, NULL, &dstRectTimer);
+	SDL_RenderCopy(Renderer, gameInfoTexture, NULL, &dstRectTimer);
 
 	// DRAW SCORE ON SCREEN
 	std::string scoreText = "Score: ";
 	scoreText += std::to_string(Score);
 	char const* pScoreChar = scoreText.c_str();
 
-	SDL_Surface* scoreInfoSurface = TTF_RenderText_Solid(font, pScoreChar, white);
-	SDL_Texture* scoreInfoTexture = SDL_CreateTextureFromSurface(ren, scoreInfoSurface);
+	SDL_Surface* scoreInfoSurface = TTF_RenderText_Solid(GameFont, pScoreChar, white);
+	SDL_Texture* scoreInfoTexture = SDL_CreateTextureFromSurface(Renderer, scoreInfoSurface);
 
 	int scoreW = 0;
 	int scoreH = 0;
@@ -62,7 +122,7 @@ void GameManager::DrawGame(SDL_Renderer* ren, TTF_Font* font, SDL_Window* window
 
 	SDL_Rect dstRectScore = { scoreX, scoreY, scoreW, scoreH };
 	
-	SDL_RenderCopy(ren, scoreInfoTexture, NULL, &dstRectScore);
+	SDL_RenderCopy(Renderer, scoreInfoTexture, NULL, &dstRectScore);
 
 	SDL_FreeSurface(gameInfoSurface);
 	SDL_FreeSurface(scoreInfoSurface);
@@ -70,18 +130,18 @@ void GameManager::DrawGame(SDL_Renderer* ren, TTF_Font* font, SDL_Window* window
 	SDL_DestroyTexture(scoreInfoTexture);
 }
 
-void GameManager::DrawGameOver(SDL_Renderer* ren, TTF_Font* font, SDL_Window* window)
+void GameManager::DrawGameOver()
 {
 	SDL_Color white = { 255,255,255 }; // Set font color
 
 	int windowWidth;
 	int windowHeight;
-	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+	SDL_GetWindowSize(Window, &windowWidth, &windowHeight);
 
 	// DRAW GAME OVER TEXT
-	SDL_Surface* gameInfoSurface = TTF_RenderText_Solid(font, "Game Over", white);
+	SDL_Surface* gameInfoSurface = TTF_RenderText_Solid(GameFont, "Game Over", white);
 
-	SDL_Texture* gameInfoTexture = SDL_CreateTextureFromSurface(ren, gameInfoSurface);
+	SDL_Texture* gameInfoTexture = SDL_CreateTextureFromSurface(Renderer, gameInfoSurface);
 
 	int timerW = 0;
 	int timerH = 0;
@@ -93,15 +153,15 @@ void GameManager::DrawGameOver(SDL_Renderer* ren, TTF_Font* font, SDL_Window* wi
 
 	SDL_Rect dstRectTimer = { timerX,timerY,timerW,timerH };
 
-	SDL_RenderCopy(ren, gameInfoTexture, NULL, &dstRectTimer);
+	SDL_RenderCopy(Renderer, gameInfoTexture, NULL, &dstRectTimer);
 
 	// DRAW SCORE ON SCREEN
 	std::string scoreText = "Score: ";
 	scoreText += std::to_string(Score);
 	char const* pScoreChar = scoreText.c_str();
 
-	SDL_Surface* scoreInfoSurface = TTF_RenderText_Solid(font, pScoreChar, white);
-	SDL_Texture* scoreInfoTexture = SDL_CreateTextureFromSurface(ren, scoreInfoSurface);
+	SDL_Surface* scoreInfoSurface = TTF_RenderText_Solid(GameFont, pScoreChar, white);
+	SDL_Texture* scoreInfoTexture = SDL_CreateTextureFromSurface(Renderer, scoreInfoSurface);
 
 	int scoreW = 0;
 	int scoreH = 0;
@@ -113,7 +173,7 @@ void GameManager::DrawGameOver(SDL_Renderer* ren, TTF_Font* font, SDL_Window* wi
 
 	SDL_Rect dstRectScore = { scoreX, scoreY, scoreW, scoreH };
 
-	SDL_RenderCopy(ren, scoreInfoTexture, NULL, &dstRectScore);
+	SDL_RenderCopy(Renderer, scoreInfoTexture, NULL, &dstRectScore);
 	
 	SDL_FreeSurface(gameInfoSurface);
 	SDL_FreeSurface(scoreInfoSurface);

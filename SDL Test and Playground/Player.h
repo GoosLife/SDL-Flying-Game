@@ -6,16 +6,17 @@ class Player {
 
 private:
 
-	SDL_Rect mPlayerModel;
 	float mVelocity;
 	float mGravity;
 
 public:
 
+	SDL_Rect PlayerModel;
+
 	Player();
 	~Player();
 
-	Collider PlayerCollider = Collider(&mPlayerModel, "Player");
+	Collider PlayerCollider = Collider(PlayerModel, "Player");
 
 	void Init(SDL_Renderer* ren);
 	void Draw(SDL_Renderer* ren);
