@@ -19,19 +19,15 @@ void SpawnManager::SpawnEntity(SDL_Window* window, std::list<Entity>* entities) 
 
 		switch (spawnId) {
 		case 1:
-			std::cout << "Clock spawned" << std::endl;
 			SpawnClock(spawnY, window, entities);
 			break;
 		case 2:
-			std::cout << "Score object spawned" << std::endl;
 			SpawnScoreObject(spawnY, window, entities);
 			break;
 		case 3:
-			std::cout << "Slow enemy spawned" << std::endl;
 			SpawnSlowEnemy(spawnY, window, entities);
 			break;
 		case 4:
-			std::cout << "Fast enemy spawned" << std::endl;
 			SpawnFastEnemy(spawnY, window, entities);
 			break;
 		case 5:
@@ -40,7 +36,6 @@ void SpawnManager::SpawnEntity(SDL_Window* window, std::list<Entity>* entities) 
 		case 8:
 		case 9:
 		case 10:
-			std::cout << "Spawned nothing" << std::endl;
 			break;
 		}
 	}

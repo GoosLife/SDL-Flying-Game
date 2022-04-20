@@ -40,15 +40,6 @@ bool Collider::HasCollided(Collider* other)
             minY < other->maxY &&
             maxY > other->minY) {
 
-            std::cout << "Min x = " << colliderBody.x << "\n";
-            std::cout << "Player min x = " << other->colliderBody.x << "\n";
-            std::cout << "Max x = " << colliderBody.x + colliderBody.w << "\n";
-            std::cout << "Player max x = " << other->colliderBody.x + other->colliderBody.w << "\n";
-            std::cout << "Min y = " << colliderBody.y << "\n";
-            std::cout << "Player min y = " << other->colliderBody.y << "\n";
-            std::cout << "Max y = " << colliderBody.y + colliderBody.h << "\n";
-            std::cout << "Player max y = " << other->colliderBody.y + other->colliderBody.h << "\n";
-
             hasCollided = true;
 
             return true;

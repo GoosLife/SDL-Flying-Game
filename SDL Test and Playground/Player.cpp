@@ -1,5 +1,4 @@
 #include "Player.h"
-#include <iostream>
 
 Player::Player() {
 	PlayerModel.x = 32;

@@ -1,5 +1,4 @@
 #include "Entity.h"
-#include <iostream> // DEBUG
 
 Entity::Entity(int type) {
 	Type = type;

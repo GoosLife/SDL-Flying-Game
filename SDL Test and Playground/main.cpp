@@ -1,6 +1,5 @@
 #define SDL_MAIN_HANDLED
 #include <algorithm>
-#include <iostream>
 #include <list>
 #include "SDL.h"
 #include "SDL_ttf.h"

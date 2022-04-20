@@ -1,6 +1,5 @@
 #pragma once
 #include <SDL.h>
-#include <iostream>
 #include <stdlib.h>
 #include <time.h>
 #include <list>
